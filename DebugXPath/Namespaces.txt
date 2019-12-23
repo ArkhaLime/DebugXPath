@@ -1,0 +1,3 @@
+#Namespace au format 'préfixe;url'. Utilisez le point-virgule comme séparateur. Un par ligne.
+a;http://acbis.com/
+env;http://schemas.xmlsoap.org/soap/envelope/
