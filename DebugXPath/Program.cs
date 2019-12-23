@@ -19,6 +19,7 @@ namespace DebugXPath
 
         private static Dictionary<string, string> _namespaces;
 
+        private static bool _startWithParameter = false;
         private static bool _inSelectionMode = false;
         private static bool _enterSelectionMode = false;
         private static XmlNode _selectedNode = null;
@@ -43,11 +44,26 @@ namespace DebugXPath
 
                 LoadNamespaces();
 
+                if(args.Length > 0)
+                {
+                    path = args[0];
+                    _startWithParameter = true;
+                }
+
                 CConsole.WriteLine("Enter a path to a xml file (or 'exit' to quit).",ConsoleColor.Green);
                 while (true)
                 {
                     CConsole.Write("File path > ",ConsoleColor.Green);
-                    path = Console.ReadLine();
+
+                    if (_startWithParameter)
+                    {
+                        Console.WriteLine(path);
+                        _startWithParameter = false;
+                    }
+                    else
+                    {
+                        path = Console.ReadLine();
+                    }
 
                     if (path == string.Empty) continue;
                     if (path.Equals(EXIT_KEYWORD, StringComparison.InvariantCultureIgnoreCase)) break;
@@ -192,8 +208,6 @@ namespace DebugXPath
                         _namespaces.Add(parts[0], parts[1]);
                     }
                 }
-
-                Console.WriteLine($"{_namespaces.Count} namespaces loaded.");
             }
             else
             {
@@ -209,6 +223,8 @@ namespace DebugXPath
                     CConsole.WriteLine("Error when creating namespaces file. Msg: " + ex.Message,ConsoleColor.Red);
                 }
             }
+
+            Console.WriteLine($"{_namespaces.Count} namespaces loaded.");
             Console.WriteLine();
         }
 
