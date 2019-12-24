@@ -44,16 +44,16 @@ namespace DebugXPath
 
                 LoadNamespaces();
 
-                if(args.Length > 0)
+                if (args.Length > 0)
                 {
                     path = args[0];
                     _startWithParameter = true;
                 }
 
-                CConsole.WriteLine("Enter a path to a xml file (or 'exit' to quit).",ConsoleColor.Green);
+                CConsole.WriteLine("Enter a path to a xml file (or 'exit' to quit).", ConsoleColor.Green);
                 while (true)
                 {
-                    CConsole.Write("File path > ",ConsoleColor.Green);
+                    CConsole.Write("File path > ", ConsoleColor.Green);
 
                     if (_startWithParameter)
                     {
@@ -66,11 +66,11 @@ namespace DebugXPath
                     }
 
                     if (path == string.Empty) continue;
-                    if (path.Equals(EXIT_KEYWORD, StringComparison.InvariantCultureIgnoreCase)) break;
+                    if (IsExitKeyword(path) || IsExitAllKeyword(path)) break;
 
                     if (!File.Exists(path))
                     {
-                        CConsole.WriteLine($"Path '{path}' doesn't exists!",ConsoleColor.Red);
+                        CConsole.WriteLine($"Path '{path}' doesn't exists!", ConsoleColor.Red);
                         continue;
                     }
 
@@ -96,9 +96,9 @@ namespace DebugXPath
                     Console.WriteLine(doc.DocumentElement.OuterXml);
                     Console.WriteLine();
 
-                    CConsole.WriteLine("Enter a XPath string (or 'exit').",ConsoleColor.Cyan);
-                    CConsole.WriteLine("Available commands :",ConsoleColor.Cyan);
-                    CConsole.WriteLine($" * {SELECT_COMMAND} <xpath> : select a specific node to work with.",ConsoleColor.Cyan);
+                    CConsole.WriteLine("Enter a XPath string (or 'exit').", ConsoleColor.Cyan);
+                    CConsole.WriteLine("Available commands :", ConsoleColor.Cyan);
+                    CConsole.WriteLine($" * {SELECT_COMMAND} <xpath> : select a specific node to work with.", ConsoleColor.Cyan);
                     CConsole.WriteLine($" * {NODES_COMMAND} : list child nodes.", ConsoleColor.Cyan);
 
                     XmlNodeList nodeList = null;
@@ -116,13 +116,13 @@ namespace DebugXPath
                             _workNode = _selectedNode;
                         }
 
-                        CConsole.Write(prompt,color);
+                        CConsole.Write(prompt, color);
                         xpath = Console.ReadLine();
 
                         //Gestion de l'entrée utilisateur et des commandes
                         if (xpath == string.Empty) continue;
-                        if (xpath.Equals(EXIT_ALL_KEYWORD, StringComparison.InvariantCultureIgnoreCase)) break;
-                        if (xpath.Equals(EXIT_KEYWORD, StringComparison.InvariantCultureIgnoreCase))
+                        if (IsExitAllKeyword(xpath)) break;
+                        if (IsExitKeyword(xpath))
                         {
                             if (_inSelectionMode)
                             {
@@ -135,13 +135,13 @@ namespace DebugXPath
                             }
                         }
 
-                        if (xpath.StartsWith(SELECT_COMMAND, StringComparison.InvariantCultureIgnoreCase))
+                        if (IsSelectCommand(xpath))
                         {
                             _enterSelectionMode = true;
-                            xpath = xpath.Replace(SELECT_COMMAND, "").Trim();
+                            xpath = xpath.Replace(SELECT_COMMAND, "").TrimStart();
                         }
 
-                        if (xpath.StartsWith(NODES_COMMAND, StringComparison.InvariantCultureIgnoreCase))
+                        if (IsNodesCommand(xpath))
                         {
                             DisplayChildNodeList(_workNode, color);
                             continue;
@@ -151,7 +151,7 @@ namespace DebugXPath
 
                         if (_enterSelectionMode && nodeList.Count != 1)
                         {
-                            CConsole.WriteLine("Exiting selection mode. You must select only 1 node!",ConsoleColor.Yellow);
+                            CConsole.WriteLine("Exiting selection mode. You must select only 1 node!", ConsoleColor.Yellow);
                             Console.WriteLine();
                             _enterSelectionMode = false;
                         }
@@ -166,14 +166,11 @@ namespace DebugXPath
                         }
                     }
 
-                    if (xpath.Equals(EXIT_ALL_KEYWORD, StringComparison.InvariantCultureIgnoreCase)) break;
+                    if (IsExitAllKeyword(xpath)) break;
                 }
-
-
             }
             catch (Exception ex)
             {
-
                 Console.WriteLine(ex.ToString());
                 Console.WriteLine();
                 Console.WriteLine("Press a key to exit ...");
@@ -182,13 +179,33 @@ namespace DebugXPath
 
         }
 
+        public static bool IsExitAllKeyword(string command)
+        {
+            return (command.Equals(EXIT_ALL_KEYWORD, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        public static bool IsExitKeyword(string command)
+        {
+            return (command.Equals(EXIT_KEYWORD, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        public static bool IsNodesCommand(string command)
+        {
+            return (command.Equals(NODES_COMMAND, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        public static bool IsSelectCommand(string command)
+        {
+            return (command.StartsWith(SELECT_COMMAND, StringComparison.InvariantCultureIgnoreCase));
+        }
+
         private static void LoadNamespaces()
         {
             _namespaces = new Dictionary<string, string>();
 
-            Console.WriteLine($"Loading custom namespaces...");
+            Console.WriteLine("Loading custom namespaces...");
 
-            string filePath = Path.Combine(Path.GetDirectoryName( Assembly.GetExecutingAssembly().Location), NAMESPACES_FILE_NAME);
+            string filePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), NAMESPACES_FILE_NAME);
             if (File.Exists(filePath))
             {
                 IEnumerable<string> lines = File.ReadLines(filePath);
@@ -196,8 +213,8 @@ namespace DebugXPath
                 {
                     if (line.StartsWith("#")) continue; //on ne lit pas les commentaires
 
-                    string[] parts = line.Split(";".ToCharArray(),2,StringSplitOptions.RemoveEmptyEntries);
-                    if(parts.Length == 2)
+                    string[] parts = line.Split(";".ToCharArray(), 2, StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length == 2)
                     {
                         //Console.WriteLine($"\tAdding namespace '{parts[1]}' with prefix '{parts[0]}'");
                         Console.Write("\tAdding namespace '");
@@ -211,16 +228,18 @@ namespace DebugXPath
             }
             else
             {
-                CConsole.WriteLine($"No '{NAMESPACES_FILE_NAME}' file. Creating it.",ConsoleColor.Yellow);
+                CConsole.WriteLine($"No '{NAMESPACES_FILE_NAME}' file. Creating it.", ConsoleColor.Yellow);
                 try
                 {
-                    var writer = File.CreateText(filePath);
-                    writer.WriteLine("#Namespace in format 'prefix;url'. Use semi-colon as separator. One namespace per line.");
-                    writer.Close();
+                    using (StreamWriter writer = File.CreateText(filePath))
+                    {
+                        writer.WriteLine("#Namespaces in format 'prefix;url'. Use semi-colon as separator. One namespace per line.");
+                        writer.Flush();
+                    }
                 }
                 catch (Exception ex)
                 {
-                    CConsole.WriteLine("Error when creating namespaces file. Msg: " + ex.Message,ConsoleColor.Red);
+                    CConsole.WriteLine("Error when creating namespaces file. Msg: " + ex.Message, ConsoleColor.Red);
                 }
             }
 
@@ -267,7 +286,7 @@ namespace DebugXPath
             {
                 //CConsole.WriteLine($"No XmlNode for XPath '{xpath}'",ConsoleColor.Yellow);
                 CConsole.Write("No nodes for XPath '", ConsoleColor.Yellow);
-                CConsole.Write(xpath,color);
+                CConsole.Write(xpath, color);
                 CConsole.WriteLine("'.", ConsoleColor.Yellow);
                 Console.WriteLine();
                 return;
@@ -284,7 +303,7 @@ namespace DebugXPath
             {
                 //CConsole.WriteLine($"No XmlNode for XPath '{xpath}'",ConsoleColor.Yellow);
                 CConsole.Write("No child nodes for node '", ConsoleColor.Yellow);
-                CConsole.Write(workNode.Name,color);
+                CConsole.Write(workNode.Name, color);
                 CConsole.WriteLine("'!", ConsoleColor.Yellow);
                 Console.WriteLine();
                 return;
@@ -306,7 +325,7 @@ namespace DebugXPath
                 Console.WriteLine();
                 Console.WriteLine(separator.ToString());
             }
-            CConsole.WriteLine($"Found {nodeList.Count} nodes.",color);
+            CConsole.WriteLine($"Found {nodeList.Count} nodes.", color);
             Console.WriteLine();
         }
     }
