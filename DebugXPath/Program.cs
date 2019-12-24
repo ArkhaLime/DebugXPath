@@ -20,14 +20,13 @@ namespace DebugXPath
         private static Dictionary<string, string> _namespaces;
 
         private static bool _startWithParameter = false;
-        private static bool _inSelectionMode = false;
-        private static bool _enterSelectionMode = false;
+        private static ESelectionModeStatus _selectionStatus = ESelectionModeStatus.None;
         private static XmlNode _selectedNode = null;
         private static XmlNode _workNode = null;
 
         private static readonly Encoding utf8 = new UTF8Encoding(false);
 
-        private static StringBuilder separator;
+        private static string separator;
 
         static void Main(string[] args)
         {
@@ -39,8 +38,9 @@ namespace DebugXPath
                 Console.OutputEncoding = utf8;
                 Console.InputEncoding = utf8;
 
-                separator = new StringBuilder();
-                separator.Append('-', 40);
+                StringBuilder bld = new StringBuilder();
+                bld.Append('-', 40);
+                separator = bld.ToString();
 
                 LoadNamespaces();
 
@@ -51,6 +51,8 @@ namespace DebugXPath
                 }
 
                 CConsole.WriteLine("Enter a path to a xml file (or 'exit' to quit).", ConsoleColor.Green);
+
+                #region "file mode"
                 while (true)
                 {
                     CConsole.Write("File path > ", ConsoleColor.Green);
@@ -65,7 +67,7 @@ namespace DebugXPath
                         path = Console.ReadLine();
                     }
 
-                    if (path == string.Empty) continue;
+                    if (string.IsNullOrWhiteSpace(path)) continue;
                     if (IsExitKeyword(path) || IsExitAllKeyword(path)) break;
 
                     if (!File.Exists(path))
@@ -79,8 +81,8 @@ namespace DebugXPath
 
                     XmlNamespaceManager nsManager = new XmlNamespaceManager(doc.NameTable);
                     AddNamespacesToManager(nsManager);
-
                     Console.WriteLine();
+
                     string nsPrefix = nsManager.LookupPrefix(doc.DocumentElement.NamespaceURI);
                     if (string.IsNullOrWhiteSpace(nsPrefix))
                     {
@@ -103,13 +105,14 @@ namespace DebugXPath
 
                     XmlNodeList nodeList = null;
 
+                    #region "xpath mode"
                     while (true)
                     {
                         string prompt = "XPath > ";
                         ConsoleColor color = ConsoleColor.Cyan;
                         _workNode = doc.DocumentElement;
 
-                        if (_inSelectionMode)
+                        if (_selectionStatus == ESelectionModeStatus.In)
                         {
                             prompt = "XPath (selection) > ";
                             color = ConsoleColor.Magenta;
@@ -120,13 +123,13 @@ namespace DebugXPath
                         xpath = Console.ReadLine();
 
                         //Gestion de l'entrée utilisateur et des commandes
-                        if (xpath == string.Empty) continue;
+                        if (string.IsNullOrWhiteSpace(xpath)) continue;
                         if (IsExitAllKeyword(xpath)) break;
                         if (IsExitKeyword(xpath))
                         {
-                            if (_inSelectionMode)
+                            if (_selectionStatus == ESelectionModeStatus.In)
                             {
-                                _inSelectionMode = false;
+                                _selectionStatus = ESelectionModeStatus.None;
                                 continue;
                             }
                             else
@@ -137,8 +140,13 @@ namespace DebugXPath
 
                         if (IsSelectCommand(xpath))
                         {
-                            _enterSelectionMode = true;
+                            _selectionStatus = ESelectionModeStatus.Entering;
                             xpath = xpath.Replace(SELECT_COMMAND, "").TrimStart();
+                            if (string.IsNullOrWhiteSpace(xpath))
+                            {
+                                CConsole.WriteLine("Usage: /select <xpath>", ConsoleColor.Yellow);
+                                continue;
+                            }
                         }
 
                         if (IsNodesCommand(xpath))
@@ -149,25 +157,26 @@ namespace DebugXPath
 
                         nodeList = _workNode.SelectNodes(xpath, nsManager);
 
-                        if (_enterSelectionMode && nodeList.Count != 1)
+                        if (_selectionStatus == ESelectionModeStatus.Entering && nodeList.Count != 1)
                         {
                             CConsole.WriteLine("Exiting selection mode. You must select only 1 node!", ConsoleColor.Yellow);
                             Console.WriteLine();
-                            _enterSelectionMode = false;
+                            _selectionStatus = ESelectionModeStatus.None;
                         }
 
                         DisplayNodeList(nodeList, xpath, color);
 
-                        if (_enterSelectionMode && nodeList.Count > 0)
+                        if (_selectionStatus == ESelectionModeStatus.Entering && nodeList.Count > 0)
                         {
                             _selectedNode = nodeList[0];
-                            _inSelectionMode = true;
-                            _enterSelectionMode = false;
+                            _selectionStatus = ESelectionModeStatus.In;
                         }
                     }
+                    #endregion "xpath mode"
 
                     if (IsExitAllKeyword(xpath)) break;
                 }
+                #endregion "file mode"
             }
             catch (Exception ex)
             {
@@ -314,7 +323,7 @@ namespace DebugXPath
 
         private static void DisplayNodes(XmlNodeList nodeList, ConsoleColor color)
         {
-            Console.WriteLine(separator.ToString());
+            Console.WriteLine(separator);
             foreach (XmlNode node in nodeList)
             {
                 //Console.WriteLine($"Node '{node.Name}'");
@@ -323,7 +332,7 @@ namespace DebugXPath
                 Console.WriteLine("' :");
                 Console.WriteLine(node.OuterXml);
                 Console.WriteLine();
-                Console.WriteLine(separator.ToString());
+                Console.WriteLine(separator);
             }
             CConsole.WriteLine($"Found {nodeList.Count} nodes.", color);
             Console.WriteLine();
