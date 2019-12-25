@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DebugXPath.Helpers
 {
@@ -35,10 +31,20 @@ namespace DebugXPath.Helpers
             }
         }
 
+        public static void Write(string value)
+        {
+            Console.Write(value);
+        }
+
         public static void WriteLine(string value, ConsoleColor? forecolor = null, ConsoleColor? backcolor = null)
         {
             Write(value, forecolor, backcolor);
             Console.WriteLine();
+        }
+
+        public static void WriteLine(string value)
+        {
+            Console.WriteLine(value);
         }
 
     }
