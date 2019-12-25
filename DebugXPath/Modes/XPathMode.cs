@@ -1,12 +1,10 @@
 ﻿using DebugXPath.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
-using CConsole = DebugXPath.Helpers.ColoredConsole;
 using DebugXPath.Helpers;
+using System;
+using System.Text;
+using System.Xml;
+using System.Xml.XPath;
+using CConsole = DebugXPath.Helpers.ColoredConsole;
 
 namespace DebugXPath.Modes
 {
@@ -24,10 +22,10 @@ namespace DebugXPath.Modes
         private string separator;
 
 
-        public XPathMode(XmlDocument xmlDocument, XmlNamespaceManager nsManager)
+        public XPathMode(XmlDocument xmlDocument)
         {
             _document = xmlDocument;
-            _nsManager = nsManager;
+            _nsManager = NamespaceHelper.Instance.CreateNamespaceManagerFromDocument(_document);
 
             StringBuilder bld = new StringBuilder();
             bld.Append('-', 40);
@@ -36,6 +34,21 @@ namespace DebugXPath.Modes
 
         public EExitMode Start()
         {
+            string nsPrefix = _nsManager.LookupPrefix(_document.DocumentElement.NamespaceURI);
+            if (string.IsNullOrWhiteSpace(nsPrefix))
+            {
+                DisplayDefaultNamespaceError(_document.DocumentElement.NamespaceURI);
+                return EExitMode.ExitMode;
+            }
+            else
+            {
+                DisplayDefaultNamespace(_document.DocumentElement.NamespaceURI, nsPrefix);
+            }
+
+            Console.WriteLine("DocumentElement:");
+            Console.WriteLine(_document.DocumentElement.OuterXml);
+            Console.WriteLine();
+
             CConsole.WriteLine("Enter a XPath string (or 'exit').", ConsoleColor.Cyan);
             CConsole.WriteLine("Available commands :", ConsoleColor.Cyan);
             CConsole.WriteLine($" * {CommandHelper.SELECT_COMMAND} <xpath> : select a specific node to work with.", ConsoleColor.Cyan);
@@ -97,22 +110,34 @@ namespace DebugXPath.Modes
                     continue;
                 }
 
-                nodeList = _workNode.SelectNodes(command, _nsManager);
-
-                if (_selectionStatus == ESelectionModeStatus.Entering && nodeList.Count != 1)
+                try
                 {
-                    CConsole.WriteLine("Exiting selection mode. You must select only 1 node!", ConsoleColor.Yellow);
+                    nodeList = _workNode.SelectNodes(command, _nsManager);
+
+                    if (_selectionStatus == ESelectionModeStatus.Entering && nodeList.Count != 1)
+                    {
+                        CConsole.WriteLine("Exiting selection mode. You must select only 1 node!", ConsoleColor.Yellow);
+                        Console.WriteLine();
+                        _selectionStatus = ESelectionModeStatus.None;
+                    }
+
+                    DisplayNodeList(nodeList, command, color);
+
+                    if (_selectionStatus == ESelectionModeStatus.Entering && nodeList.Count > 0)
+                    {
+                        _selectedNode = nodeList[0];
+                        _selectionStatus = ESelectionModeStatus.In;
+                    }
+                }
+                catch (XPathException ex)
+                {
+                    CConsole.Write("Error with the xpath expression: '",ConsoleColor.Red);
+                    CConsole.Write(command);
+                    CConsole.WriteLine("'!", ConsoleColor.Red);
+                    CConsole.WriteLine($"Message: {ex.Message}", ConsoleColor.Red);
                     Console.WriteLine();
-                    _selectionStatus = ESelectionModeStatus.None;
                 }
 
-                DisplayNodeList(nodeList, command, color);
-
-                if (_selectionStatus == ESelectionModeStatus.Entering && nodeList.Count > 0)
-                {
-                    _selectedNode = nodeList[0];
-                    _selectionStatus = ESelectionModeStatus.In;
-                }
             } //end while
 
             return _exitMode;
@@ -164,6 +189,28 @@ namespace DebugXPath.Modes
                 Console.WriteLine(separator);
             }
             CConsole.WriteLine($"Found {nodeList.Count} nodes.", color);
+            Console.WriteLine();
+        }
+
+        private static void DisplayDefaultNamespace(string uri, string prefix)
+        {
+            //Console.WriteLine($"Default namespace uri '{doc.DocumentElement.NamespaceURI}' has prefix '{nsPrefix}'.");
+            Console.Write("Default namespace uri '");
+            CConsole.Write(uri, ConsoleColor.Cyan);
+            Console.Write("' has prefix '");
+            CConsole.Write(prefix, ConsoleColor.Cyan);
+            Console.WriteLine("'.");
+            Console.WriteLine();
+        }
+
+        private static void DisplayDefaultNamespaceError(string uri)
+        {
+            //CConsole.WriteLine($"Can't find a prefix for default namespace uri '{doc.DocumentElement.NamespaceURI}' in namespace manager.", ConsoleColor.Red);
+            //CConsole.WriteLine($"Add that namespace uri with a prefix in the '{NAMESPACES_FILE_NAME}' file.", ConsoleColor.Red);
+            CConsole.Write("Can't find a prefix for default namespace uri '", ConsoleColor.Red);
+            CConsole.Write(uri, ConsoleColor.Cyan);
+            CConsole.WriteLine("' in namespace manager.", ConsoleColor.Red);
+            CConsole.WriteLine($"Add that namespace uri with a prefix in the '{NamespaceHelper.NAMESPACES_FILE_NAME}' file.", ConsoleColor.Red);
             Console.WriteLine();
         }
     }
