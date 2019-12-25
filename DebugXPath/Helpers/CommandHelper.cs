@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DebugXPath.Helpers
 {
@@ -10,8 +6,11 @@ namespace DebugXPath.Helpers
     {
         public const string EXIT_KEYWORD = "exit";
         public const string EXIT_ALL_KEYWORD = "qqq";
+        public const string HELP_KEYWORD = "help";
         public const string SELECT_COMMAND = "/select";
         public const string NODES_COMMAND = "/nodes";
+        public const string NAMESPACES_COMMAND = "/namespaces";
+        public const string NAMESPACES_COMMAND_SHORT = "/ns";
 
         public static bool IsExitAllKeyword(string command)
         {
@@ -23,6 +22,11 @@ namespace DebugXPath.Helpers
             return (command.Equals(EXIT_KEYWORD, StringComparison.InvariantCultureIgnoreCase));
         }
 
+        public static bool IsHelpKeyword(string command)
+        {
+            return (command.Equals(HELP_KEYWORD, StringComparison.InvariantCultureIgnoreCase));
+        }
+
         public static bool IsNodesCommand(string command)
         {
             return (command.Equals(NODES_COMMAND, StringComparison.InvariantCultureIgnoreCase));
@@ -31,6 +35,12 @@ namespace DebugXPath.Helpers
         public static bool IsSelectCommand(string command)
         {
             return (command.StartsWith(SELECT_COMMAND, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        public static bool IsNamespacesCommand(string command)
+        {
+            return (command.Equals(NAMESPACES_COMMAND, StringComparison.InvariantCultureIgnoreCase) ||
+                command.Equals(NAMESPACES_COMMAND_SHORT, StringComparison.InvariantCultureIgnoreCase));
         }
     }
 }

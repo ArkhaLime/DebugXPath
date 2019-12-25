@@ -13,6 +13,7 @@ namespace DebugXPath
 {
     class Program
     {
+        private const ConsoleColor MODE_COLOR = ConsoleColor.Green;
         private static readonly Encoding utf8 = new UTF8Encoding(false);
 
         private static bool _startWithParameter = false;
@@ -35,12 +36,12 @@ namespace DebugXPath
                     _startWithParameter = true;
                 }
 
-                CConsole.WriteLine("Enter a path to a xml file (or 'exit' to quit).", ConsoleColor.Green);
+                DisplayHelp();
 
                 #region "file mode"
                 while (true)
                 {
-                    CConsole.Write("File path > ", ConsoleColor.Green);
+                    CConsole.Write("File path > ", MODE_COLOR);
 
                     if (_startWithParameter)
                     {
@@ -53,7 +54,24 @@ namespace DebugXPath
                     }
 
                     if (string.IsNullOrWhiteSpace(path)) continue;
+
                     if (CommandHelper.IsExitKeyword(path) || CommandHelper.IsExitAllKeyword(path)) break;
+
+                    if (CommandHelper.IsHelpKeyword(path))
+                    {
+                        DisplayHelp();
+                        continue;
+                    }
+
+                    if (CommandHelper.IsNamespacesCommand(path))
+                    {
+                        EExitMode nsExitMode = new NamespaceMgtMode().Start();
+                        //if (nsExitMode == EExitMode.ExitMode) continue;
+                        if (nsExitMode == EExitMode.ExitApplication) break;
+
+                        //use continue for EExitMode.None (is usefull ?) and EExitMode.ExitMode
+                        continue;
+                    }
 
                     if (!File.Exists(path))
                     {
@@ -81,6 +99,16 @@ namespace DebugXPath
                 Console.ReadKey();
             }
 
+        }
+
+        private static void DisplayHelp()
+        {
+            CConsole.WriteLine("Enter a path to a xml file.", MODE_COLOR);
+            CConsole.WriteLine("Available commands :", MODE_COLOR);
+            CConsole.WriteLine($" * {CommandHelper.HELP_KEYWORD} : display this message", MODE_COLOR);
+            CConsole.WriteLine($" * {CommandHelper.EXIT_KEYWORD} : exit the application", MODE_COLOR);
+            CConsole.WriteLine($" * {CommandHelper.NAMESPACES_COMMAND} or {CommandHelper.NAMESPACES_COMMAND_SHORT} : enter namespaces mode", MODE_COLOR);
+            Console.WriteLine();
         }
     }
 }

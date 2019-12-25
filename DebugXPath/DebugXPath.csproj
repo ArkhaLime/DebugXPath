@@ -51,6 +51,7 @@
     <Compile Include="Enums\ESelectionModeStatus.cs" />
     <Compile Include="Helpers\CommandHelper.cs" />
     <Compile Include="Helpers\NamespaceHelper.cs" />
+    <Compile Include="Modes\NamespaceMgtMode.cs" />
     <Compile Include="Modes\XPathMode.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
