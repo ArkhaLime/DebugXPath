@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DebugXPath
+namespace DebugXPath.Helpers
 {
     //inspired from https://github.com/colored-console/colored-console/blob/dev/src/ColoredConsole/ColorConsole.cs
     public static class ColoredConsole

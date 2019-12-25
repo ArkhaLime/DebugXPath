@@ -1,10 +1,13 @@
-﻿using System;
+﻿using DebugXPath.Enums;
+using DebugXPath.Helpers;
+using DebugXPath.Modes;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Xml;
-using CConsole = DebugXPath.ColoredConsole;
+using CConsole = DebugXPath.Helpers.ColoredConsole;
 
 namespace DebugXPath
 {
@@ -12,17 +15,9 @@ namespace DebugXPath
     {
         private const string NAMESPACES_FILE_NAME = "Namespaces.txt";
 
-        private const string EXIT_KEYWORD = "exit";
-        private const string EXIT_ALL_KEYWORD = "qqq";
-        private const string SELECT_COMMAND = "/select";
-        private const string NODES_COMMAND = "/nodes";
-
         private static Dictionary<string, string> _namespaces;
 
         private static bool _startWithParameter = false;
-        private static ESelectionModeStatus _selectionStatus = ESelectionModeStatus.None;
-        private static XmlNode _selectedNode = null;
-        private static XmlNode _workNode = null;
 
         private static readonly Encoding utf8 = new UTF8Encoding(false);
 
@@ -68,7 +63,7 @@ namespace DebugXPath
                     }
 
                     if (string.IsNullOrWhiteSpace(path)) continue;
-                    if (IsExitKeyword(path) || IsExitAllKeyword(path)) break;
+                    if (CommandHelper.IsExitKeyword(path) || CommandHelper.IsExitAllKeyword(path)) break;
 
                     if (!File.Exists(path))
                     {
@@ -98,85 +93,11 @@ namespace DebugXPath
                     Console.WriteLine(doc.DocumentElement.OuterXml);
                     Console.WriteLine();
 
-                    CConsole.WriteLine("Enter a XPath string (or 'exit').", ConsoleColor.Cyan);
-                    CConsole.WriteLine("Available commands :", ConsoleColor.Cyan);
-                    CConsole.WriteLine($" * {SELECT_COMMAND} <xpath> : select a specific node to work with.", ConsoleColor.Cyan);
-                    CConsole.WriteLine($" * {NODES_COMMAND} : list child nodes.", ConsoleColor.Cyan);
+                    XPathMode mode = new XPathMode(doc, nsManager);
+                    EExitMode exitMode = mode.Start();
 
-                    XmlNodeList nodeList = null;
-
-                    #region "xpath mode"
-                    while (true)
-                    {
-                        string prompt = "XPath > ";
-                        ConsoleColor color = ConsoleColor.Cyan;
-                        _workNode = doc.DocumentElement;
-
-                        if (_selectionStatus == ESelectionModeStatus.In)
-                        {
-                            prompt = "XPath (selection) > ";
-                            color = ConsoleColor.Magenta;
-                            _workNode = _selectedNode;
-                        }
-
-                        CConsole.Write(prompt, color);
-                        xpath = Console.ReadLine();
-
-                        //Gestion de l'entrée utilisateur et des commandes
-                        if (string.IsNullOrWhiteSpace(xpath)) continue;
-                        if (IsExitAllKeyword(xpath)) break;
-                        if (IsExitKeyword(xpath))
-                        {
-                            if (_selectionStatus == ESelectionModeStatus.In)
-                            {
-                                _selectionStatus = ESelectionModeStatus.None;
-                                continue;
-                            }
-                            else
-                            {
-                                break;
-                            }
-                        }
-
-                        if (IsSelectCommand(xpath))
-                        {
-                            _selectionStatus = ESelectionModeStatus.Entering;
-                            xpath = xpath.Replace(SELECT_COMMAND, "").TrimStart();
-                            if (string.IsNullOrWhiteSpace(xpath))
-                            {
-                                CConsole.WriteLine("Usage: /select <xpath>", ConsoleColor.Yellow);
-                                continue;
-                            }
-                        }
-
-                        if (IsNodesCommand(xpath))
-                        {
-                            DisplayChildNodeList(_workNode, color);
-                            continue;
-                        }
-
-                        nodeList = _workNode.SelectNodes(xpath, nsManager);
-
-                        if (_selectionStatus == ESelectionModeStatus.Entering && nodeList.Count != 1)
-                        {
-                            CConsole.WriteLine("Exiting selection mode. You must select only 1 node!", ConsoleColor.Yellow);
-                            Console.WriteLine();
-                            _selectionStatus = ESelectionModeStatus.None;
-                        }
-
-                        DisplayNodeList(nodeList, xpath, color);
-
-                        if (_selectionStatus == ESelectionModeStatus.Entering && nodeList.Count > 0)
-                        {
-                            _selectedNode = nodeList[0];
-                            _selectionStatus = ESelectionModeStatus.In;
-                        }
-                    }
-                    #endregion "xpath mode"
-
-                    if (IsExitAllKeyword(xpath)) break;
+                    if (exitMode == EExitMode.ExitApplication) break;
                 }
-                #endregion "file mode"
             }
             catch (Exception ex)
             {
@@ -186,26 +107,6 @@ namespace DebugXPath
                 Console.ReadKey();
             }
 
-        }
-
-        public static bool IsExitAllKeyword(string command)
-        {
-            return (command.Equals(EXIT_ALL_KEYWORD, StringComparison.InvariantCultureIgnoreCase));
-        }
-
-        public static bool IsExitKeyword(string command)
-        {
-            return (command.Equals(EXIT_KEYWORD, StringComparison.InvariantCultureIgnoreCase));
-        }
-
-        public static bool IsNodesCommand(string command)
-        {
-            return (command.Equals(NODES_COMMAND, StringComparison.InvariantCultureIgnoreCase));
-        }
-
-        public static bool IsSelectCommand(string command)
-        {
-            return (command.StartsWith(SELECT_COMMAND, StringComparison.InvariantCultureIgnoreCase));
         }
 
         private static void LoadNamespaces()
@@ -286,55 +187,6 @@ namespace DebugXPath
             CConsole.Write(uri, ConsoleColor.Cyan);
             CConsole.WriteLine("' in namespace manager.", ConsoleColor.Red);
             CConsole.WriteLine($"Add that namespace uri with a prefix in the '{NAMESPACES_FILE_NAME}' file.", ConsoleColor.Red);
-            Console.WriteLine();
-        }
-
-        private static void DisplayNodeList(XmlNodeList nodeList, string xpath, ConsoleColor color)
-        {
-            if (nodeList.Count == 0)
-            {
-                //CConsole.WriteLine($"No XmlNode for XPath '{xpath}'",ConsoleColor.Yellow);
-                CConsole.Write("No nodes for XPath '", ConsoleColor.Yellow);
-                CConsole.Write(xpath, color);
-                CConsole.WriteLine("'.", ConsoleColor.Yellow);
-                Console.WriteLine();
-                return;
-            }
-
-            DisplayNodes(nodeList, color);
-        }
-
-        private static void DisplayChildNodeList(XmlNode workNode, ConsoleColor color)
-        {
-            var nodeList = workNode.ChildNodes;
-
-            if (nodeList.Count == 0)
-            {
-                //CConsole.WriteLine($"No XmlNode for XPath '{xpath}'",ConsoleColor.Yellow);
-                CConsole.Write("No child nodes for node '", ConsoleColor.Yellow);
-                CConsole.Write(workNode.Name, color);
-                CConsole.WriteLine("'!", ConsoleColor.Yellow);
-                Console.WriteLine();
-                return;
-            }
-
-            DisplayNodes(nodeList, color);
-        }
-
-        private static void DisplayNodes(XmlNodeList nodeList, ConsoleColor color)
-        {
-            Console.WriteLine(separator);
-            foreach (XmlNode node in nodeList)
-            {
-                //Console.WriteLine($"Node '{node.Name}'");
-                Console.Write("Node '");
-                CConsole.Write(node.Name, color);
-                Console.WriteLine("' :");
-                Console.WriteLine(node.OuterXml);
-                Console.WriteLine();
-                Console.WriteLine(separator);
-            }
-            CConsole.WriteLine($"Found {nodeList.Count} nodes.", color);
             Console.WriteLine();
         }
     }

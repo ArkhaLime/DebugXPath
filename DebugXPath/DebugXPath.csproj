@@ -46,8 +46,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ColoredConsole.cs" />
-    <Compile Include="ESelectionModeStatus.cs" />
+    <Compile Include="Helpers\ColoredConsole.cs" />
+    <Compile Include="Enums\EExitMode.cs" />
+    <Compile Include="Enums\ESelectionModeStatus.cs" />
+    <Compile Include="Helpers\CommandHelper.cs" />
+    <Compile Include="Modes\XPathMode.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

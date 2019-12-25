@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DebugXPath
+namespace DebugXPath.Enums
 {
-    enum ESelectionModeStatus
+    enum EExitMode
     {
         None,
-        Entering,
-        In
+        ExitMode,
+        ExitApplication
     }
 }
