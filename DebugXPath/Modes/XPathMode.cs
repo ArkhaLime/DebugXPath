@@ -109,7 +109,7 @@ namespace DebugXPath.Modes
                     command = command.Replace(CommandHelper.SELECT_COMMAND, "").TrimStart();
                     if (string.IsNullOrWhiteSpace(command))
                     {
-                        CConsole.WriteLine("Usage: /select <xpath>", ConsoleColor.Yellow);
+                        CConsole.WriteLine($"Usage: {CommandHelper.SELECT_COMMAND} <xpath>", ConsoleColor.Yellow);
                         continue;
                     }
                     _selectionStatus = ESelectionModeStatus.Entering;
