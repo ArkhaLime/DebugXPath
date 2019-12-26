@@ -11,6 +11,8 @@ namespace DebugXPath.Helpers
         public const string NODES_COMMAND = "/nodes";
         public const string NAMESPACES_COMMAND = "/namespaces";
         public const string NAMESPACES_COMMAND_SHORT = "/ns";
+        public const string NS_DISPLAY_COMMAND = "display";
+        public const string NS_ADD_COMMAND = "add";
 
         public static bool IsExitAllKeyword(string command)
         {
@@ -41,6 +43,16 @@ namespace DebugXPath.Helpers
         {
             return (command.Equals(NAMESPACES_COMMAND, StringComparison.InvariantCultureIgnoreCase) ||
                 command.Equals(NAMESPACES_COMMAND_SHORT, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        public static bool IsNsDisplayCommand(string command)
+        {
+            return (command.Equals(NS_DISPLAY_COMMAND, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        public static bool IsNsAddCommand(string command)
+        {
+            return (command.StartsWith(NS_ADD_COMMAND, StringComparison.InvariantCultureIgnoreCase));
         }
     }
 }

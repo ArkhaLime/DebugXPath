@@ -97,15 +97,26 @@ namespace DebugXPath.Helpers
         {
             XmlNamespaceManager nsManager = new XmlNamespaceManager(document.NameTable);
 
-            foreach (string key in _namespaces.Keys)
+            /*foreach (string key in _namespaces.Keys)
             {
                 if (string.IsNullOrWhiteSpace(key)) continue;
                 string value = string.Empty;
                 bool ok = _namespaces.TryGetValue(key, out value);
                 if (ok) nsManager.AddNamespace(key, value);
+            }*/
+
+            foreach (KeyValuePair<string,string> kv in _namespaces)
+            {
+                if (string.IsNullOrWhiteSpace(kv.Key)) continue;
+                nsManager.AddNamespace(kv.Key, kv.Value);
             }
 
             return nsManager;
+        }
+
+        public IReadOnlyDictionary<string,string> GetCustomNamespaces()
+        {
+            return _namespaces;
         }
 
 
