@@ -45,7 +45,7 @@ namespace DebugXPath
 
                     if (_startWithParameter)
                     {
-                        Console.WriteLine(path);
+                        CConsole.WriteLine(path);
                         _startWithParameter = false;
                     }
                     else
@@ -94,8 +94,8 @@ namespace DebugXPath
             catch (Exception ex)
             {
                 CConsole.WriteLine(ex.ToString(),ConsoleColor.Red);
-                Console.WriteLine();
-                Console.WriteLine("Press a key to exit ...");
+                CConsole.WriteLine();
+                CConsole.WriteLine("Press a key to exit ...");
                 Console.ReadKey();
             }
 
@@ -108,7 +108,7 @@ namespace DebugXPath
             CConsole.WriteLine($" * {CommandHelper.HELP_KEYWORD} : display this message", MODE_COLOR);
             CConsole.WriteLine($" * {CommandHelper.EXIT_KEYWORD} : exit the application", MODE_COLOR);
             CConsole.WriteLine($" * {CommandHelper.NAMESPACES_COMMAND} or {CommandHelper.NAMESPACES_COMMAND_SHORT} : enter namespaces mode", MODE_COLOR);
-            Console.WriteLine();
+            CConsole.WriteLine();
         }
     }
 }

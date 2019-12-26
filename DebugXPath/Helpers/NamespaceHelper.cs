@@ -40,7 +40,7 @@ namespace DebugXPath.Helpers
         {
             _namespaces.Clear();
 
-            Console.WriteLine("Loading custom namespaces...");
+            CConsole.WriteLine("Loading custom namespaces...");
 
             string filePath = GetFilePath();
             if (File.Exists(filePath))
@@ -62,8 +62,8 @@ namespace DebugXPath.Helpers
                 CreateNamespacesFile();
             }
 
-            Console.WriteLine($"{_namespaces.Count} namespaces loaded.");
-            Console.WriteLine();
+            CConsole.WriteLine($"{_namespaces.Count} namespaces loaded.");
+            CConsole.WriteLine();
         }
 
         private void CreateNamespacesFile()
@@ -90,7 +90,7 @@ namespace DebugXPath.Helpers
                 CConsole.Write("Prefix '", ConsoleColor.Yellow);
                 CConsole.Write(prefix);
                 CConsole.Write("' is already in use!", ConsoleColor.Yellow);
-                Console.WriteLine();
+                CConsole.WriteLine();
                 return false;
             }
 

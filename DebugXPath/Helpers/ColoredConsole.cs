@@ -47,5 +47,10 @@ namespace DebugXPath.Helpers
             Console.WriteLine(value);
         }
 
+        public static void WriteLine()
+        {
+            Console.WriteLine();
+        }
+
     }
 }

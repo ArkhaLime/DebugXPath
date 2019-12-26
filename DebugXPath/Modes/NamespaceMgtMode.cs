@@ -91,7 +91,7 @@ namespace DebugXPath.Modes
             CConsole.WriteLine($" * {CommandHelper.NS_ADD_COMMAND} <prefix> <uri> : add a custom namespace", MODE_COLOR);
             CConsole.WriteLine($" * {CommandHelper.NS_DELETE_COMMAND} <prefix> : delete the custom namespace associated with <prefix>", MODE_COLOR);
             CConsole.WriteLine($" * {CommandHelper.NS_SAVE_COMMAND} : save added namespaces", MODE_COLOR);
-            Console.WriteLine();
+            CConsole.WriteLine();
         }
 
         private void DisplayCustomNamespaces()
@@ -112,7 +112,7 @@ namespace DebugXPath.Modes
                 CConsole.Write(kv.Key);
                 CConsole.WriteLine("'" + status, MODE_COLOR);
             }
-            Console.WriteLine();
+            CConsole.WriteLine();
         }
 
         private void AddNamespace(string command)
@@ -127,7 +127,7 @@ namespace DebugXPath.Modes
                 bool added = NamespaceHelper.Instance.AddNamespace(parts[1], parts[2]);
                 _hasModificationsNotSaved |= added;
             }
-            Console.WriteLine();
+            CConsole.WriteLine();
         }
 
         private void DeleteNamespace(string command)
@@ -146,7 +146,7 @@ namespace DebugXPath.Modes
                 CConsole.Write(parts[1]);
                 CConsole.WriteLine("' was removed.", MODE_COLOR);
             }
-            Console.WriteLine();
+            CConsole.WriteLine();
         }
 
         private void SaveNewNamespaces()
@@ -158,7 +158,7 @@ namespace DebugXPath.Modes
                 CConsole.WriteLine("Namespaces saved!", MODE_COLOR);
                 _hasModificationsNotSaved = false;
             }
-            Console.WriteLine();
+            CConsole.WriteLine();
         }
     }
 }
