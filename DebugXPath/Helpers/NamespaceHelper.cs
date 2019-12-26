@@ -11,7 +11,7 @@ namespace DebugXPath.Helpers
     {
 
         public const string NAMESPACES_FILE_NAME = "Namespaces.txt";
-        private const string FILE_HEADER = "# Namespaces in format 'prefix;url'. Use semi-colon as separator. One namespace per line.";
+        private const string FILE_HEADER = "# Namespaces in format 'prefix;uri'. Use semi-colon as separator. One namespace per line.";
 
         private static NamespaceHelper _instance = null;
         private static Dictionary<string, string> _namespaces;
@@ -83,14 +83,29 @@ namespace DebugXPath.Helpers
             }
         }
 
-        public void AddNamespace(string prefix, string uri)
+        public bool AddNamespace(string prefix, string uri)
         {
-            Console.Write("Adding namespace '");
+            if (_namespaces.ContainsKey(prefix))
+            {
+                CConsole.Write("Prefix '", ConsoleColor.Yellow);
+                CConsole.Write(prefix);
+                CConsole.Write("' is already in use!", ConsoleColor.Yellow);
+                Console.WriteLine();
+                return false;
+            }
+
+            CConsole.Write("Adding namespace '");
             CConsole.Write(uri, ConsoleColor.Cyan);
-            Console.Write("' with prefix '");
+            CConsole.Write("' with prefix '");
             CConsole.Write(prefix, ConsoleColor.Cyan);
-            Console.WriteLine("'");
+            CConsole.WriteLine("'.");
             _namespaces.Add(prefix, uri);
+            return true;
+        }
+
+        public bool DeleteNamespace(string prefix)
+        {
+            return _namespaces.Remove(prefix);
         }
 
         public XmlNamespaceManager CreateNamespaceManagerFromDocument(XmlDocument document)
@@ -105,20 +120,48 @@ namespace DebugXPath.Helpers
                 if (ok) nsManager.AddNamespace(key, value);
             }*/
 
-            foreach (KeyValuePair<string,string> kv in _namespaces)
+            foreach (KeyValuePair<string, string> kv in _namespaces)
             {
-                if (string.IsNullOrWhiteSpace(kv.Key)) continue;
+                if (string.IsNullOrWhiteSpace(kv.Key) || string.IsNullOrWhiteSpace(kv.Value)) continue;
                 nsManager.AddNamespace(kv.Key, kv.Value);
             }
 
             return nsManager;
         }
 
-        public IReadOnlyDictionary<string,string> GetCustomNamespaces()
+        public IReadOnlyDictionary<string, string> GetCustomNamespaces()
         {
             return _namespaces;
         }
 
+        public bool SaveNewNamespaces()
+        {
+            string path = GetFilePath();
+            bool exists = File.Exists(path);
+
+            try
+            {
+                if (exists) File.Delete(path);
+
+                using (StreamWriter writer = File.CreateText(path))
+                {
+                    writer.WriteLine(FILE_HEADER);
+                    foreach (KeyValuePair<string, string> kv in _namespaces)
+                    {
+                        writer.WriteLine($"{kv.Key};{kv.Value}");
+                    }
+                    writer.Flush();
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                CConsole.WriteLine("Error when saving namespaces file. Msg: " + ex.Message, ConsoleColor.Red);
+                return false;
+            }
+
+        }
 
     }
 }

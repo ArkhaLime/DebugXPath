@@ -13,6 +13,8 @@ namespace DebugXPath.Modes
 
         private EExitMode _exitMode = EExitMode.None;
 
+        private static bool _hasModificationsNotSaved = false;
+
         private string command = string.Empty;
 
         public NamespaceMgtMode() { }
@@ -25,6 +27,7 @@ namespace DebugXPath.Modes
             while (true)
             {
                 string prompt = "Namespaces > ";
+                if (_hasModificationsNotSaved) prompt = "Namespaces * > ";
 
                 CConsole.Write(prompt, MODE_COLOR);
                 command = Console.ReadLine();
@@ -61,6 +64,18 @@ namespace DebugXPath.Modes
                     continue;
                 }
 
+                if (CommandHelper.IsNsDeleteCommand(command))
+                {
+                    DeleteNamespace(command);
+                    continue;
+                }
+
+                if (CommandHelper.IsNsSaveCommand(command))
+                {
+                    SaveNewNamespaces();
+                    continue;
+                }
+
             }
 
             return _exitMode;
@@ -74,6 +89,8 @@ namespace DebugXPath.Modes
             CConsole.WriteLine($" * {CommandHelper.EXIT_KEYWORD} : exit the current mode", MODE_COLOR);
             CConsole.WriteLine($" * {CommandHelper.NS_DISPLAY_COMMAND} : display loaded custom namespaces", MODE_COLOR);
             CConsole.WriteLine($" * {CommandHelper.NS_ADD_COMMAND} <prefix> <uri> : add a custom namespace", MODE_COLOR);
+            CConsole.WriteLine($" * {CommandHelper.NS_DELETE_COMMAND} <prefix> : delete the custom namespace associated with <prefix>", MODE_COLOR);
+            CConsole.WriteLine($" * {CommandHelper.NS_SAVE_COMMAND} : save added namespaces", MODE_COLOR);
             Console.WriteLine();
         }
 
@@ -84,7 +101,11 @@ namespace DebugXPath.Modes
             CConsole.WriteLine("Loaded custom namespaces :", MODE_COLOR);
             foreach (KeyValuePair<string, string> kv in NamespaceHelper.Instance.GetCustomNamespaces())
             {
-                status = string.IsNullOrWhiteSpace(kv.Key) ? " (unused)" : string.Empty;
+                status = string.Empty;
+                if (string.IsNullOrWhiteSpace(kv.Key) || string.IsNullOrWhiteSpace(kv.Value))
+                {
+                    status = " (unusable)";
+                }
                 CConsole.Write(" * Namespace '", MODE_COLOR);
                 CConsole.Write(kv.Value);
                 CConsole.Write("' with prefix '", MODE_COLOR);
@@ -103,7 +124,39 @@ namespace DebugXPath.Modes
             }
             else
             {
-                NamespaceHelper.Instance.AddNamespace(parts[1], parts[2]);
+                bool added = NamespaceHelper.Instance.AddNamespace(parts[1], parts[2]);
+                _hasModificationsNotSaved |= added;
+            }
+            Console.WriteLine();
+        }
+
+        private void DeleteNamespace(string command)
+        {
+            string[] parts = command.Split(" ".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length != 2)
+            {
+                CConsole.WriteLine($"Usage: {CommandHelper.NS_DELETE_COMMAND} <prefix>", ConsoleColor.Yellow);
+            }
+            else
+            {
+                bool removed = NamespaceHelper.Instance.DeleteNamespace(parts[1]);
+                _hasModificationsNotSaved |= removed;
+
+                CConsole.Write("Prefix '", MODE_COLOR);
+                CConsole.Write(parts[1]);
+                CConsole.WriteLine("' was removed.", MODE_COLOR);
+            }
+            Console.WriteLine();
+        }
+
+        private void SaveNewNamespaces()
+        {
+            bool saved = NamespaceHelper.Instance.SaveNewNamespaces();
+
+            if (saved)
+            {
+                CConsole.WriteLine("Namespaces saved!", MODE_COLOR);
+                _hasModificationsNotSaved = false;
             }
             Console.WriteLine();
         }

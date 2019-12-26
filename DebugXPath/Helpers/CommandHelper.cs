@@ -13,6 +13,8 @@ namespace DebugXPath.Helpers
         public const string NAMESPACES_COMMAND_SHORT = "/ns";
         public const string NS_DISPLAY_COMMAND = "display";
         public const string NS_ADD_COMMAND = "add";
+        public const string NS_SAVE_COMMAND = "save";
+        public const string NS_DELETE_COMMAND = "delete";
 
         public static bool IsExitAllKeyword(string command)
         {
@@ -53,6 +55,16 @@ namespace DebugXPath.Helpers
         public static bool IsNsAddCommand(string command)
         {
             return (command.StartsWith(NS_ADD_COMMAND, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        public static bool IsNsSaveCommand(string command)
+        {
+            return (command.Equals(NS_SAVE_COMMAND, StringComparison.InvariantCultureIgnoreCase));
+        }
+
+        public static bool IsNsDeleteCommand(string command)
+        {
+            return (command.StartsWith(NS_DELETE_COMMAND, StringComparison.InvariantCultureIgnoreCase));
         }
     }
 }
