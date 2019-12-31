@@ -26,7 +26,9 @@ namespace DebugXPath
                 string xpath = string.Empty;
 
                 Console.OutputEncoding = utf8;
-                Console.InputEncoding = utf8;
+                //removed input encoding utf8 because character like "é" are treated like "\0" when entered in cmd.
+                //with ot without utf8, it doesn't works in windows terminal!
+                //Console.InputEncoding = utf8;
 
                 NamespaceHelper.Instance.LoadNamespaces();
 
@@ -76,18 +78,27 @@ namespace DebugXPath
                     if (!File.Exists(path))
                     {
                         CConsole.WriteLine($"Path '{path}' doesn't exists!", ConsoleColor.Red);
+                        CConsole.WriteLine();
                         continue;
                     }
 
-                    Console.WriteLine();
+                    try
+                    {
+                        XmlDocument doc = new XmlDocument();
+                        doc.Load(path);
 
-                    XmlDocument doc = new XmlDocument();
-                    doc.Load(path);
+                        Console.WriteLine();
+                        XPathMode mode = new XPathMode(doc);
+                        EExitMode exitMode = mode.Start();
 
-                    XPathMode mode = new XPathMode(doc);
-                    EExitMode exitMode = mode.Start();
-
-                    if (exitMode == EExitMode.ExitApplication) break;
+                        if (exitMode == EExitMode.ExitApplication) break;
+                    }
+                    catch (XmlException ex)
+                    {
+                        CConsole.WriteLine("Error when loading file!", ConsoleColor.Red);
+                        CConsole.WriteLine($"Message: {ex.Message}", ConsoleColor.Red);
+                        Console.WriteLine();
+                    }
                 }
                 #endregion "file mode"
             }
