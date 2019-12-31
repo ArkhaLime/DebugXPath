@@ -81,6 +81,7 @@ namespace DebugXPath.Helpers
             {
                 CConsole.WriteLine("Error when creating namespaces file. Msg: " + ex.Message, ConsoleColor.Red);
             }
+            CConsole.WriteLine();
         }
 
         public bool AddNamespace(string prefix, string uri)
@@ -99,6 +100,7 @@ namespace DebugXPath.Helpers
             CConsole.Write("' with prefix '");
             CConsole.Write(prefix, ConsoleColor.Cyan);
             CConsole.WriteLine("'.");
+            CConsole.WriteLine();
             _namespaces.Add(prefix, uri);
             return true;
         }
@@ -158,6 +160,7 @@ namespace DebugXPath.Helpers
             catch (Exception ex)
             {
                 CConsole.WriteLine("Error when saving namespaces file. Msg: " + ex.Message, ConsoleColor.Red);
+                CConsole.WriteLine();
                 return false;
             }
 
