@@ -45,7 +45,7 @@ namespace DebugXPath.Modes
             if (string.IsNullOrWhiteSpace(nsPrefix))
             {
                 DisplayDefaultNamespaceError(_document.DocumentElement.NamespaceURI);
-                return EExitMode.ExitMode;
+                //return EExitMode.ExitMode;
             }
             else
             {
@@ -91,11 +91,9 @@ namespace DebugXPath.Modes
                         _selectionStatus = ESelectionModeStatus.None;
                         continue;
                     }
-                    else
-                    {
-                        _exitMode = EExitMode.ExitMode;
-                        break;
-                    }
+
+                    _exitMode = EExitMode.ExitMode;
+                    break;
                 }
 
                 if (CommandHelper.IsHelpKeyword(command))
@@ -169,7 +167,6 @@ namespace DebugXPath.Modes
         {
             if (nodeList.Count == 0)
             {
-                //CConsole.WriteLine($"No XmlNode for XPath '{xpath}'",ConsoleColor.Yellow);
                 CConsole.Write("No nodes for XPath '", ConsoleColor.Yellow);
                 CConsole.Write(xpath, _activeColor);
                 CConsole.WriteLine("'.", ConsoleColor.Yellow);
@@ -186,7 +183,6 @@ namespace DebugXPath.Modes
 
             if (nodeList.Count == 0)
             {
-                //CConsole.WriteLine($"No XmlNode for XPath '{xpath}'",ConsoleColor.Yellow);
                 CConsole.Write("No child nodes for node '", ConsoleColor.Yellow);
                 CConsole.Write(workNode.Name, _activeColor);
                 CConsole.WriteLine("'!", ConsoleColor.Yellow);
@@ -202,7 +198,6 @@ namespace DebugXPath.Modes
             Console.WriteLine(separator);
             foreach (XmlNode node in nodeList)
             {
-                //Console.WriteLine($"Node '{node.Name}'");
                 Console.Write("Node '");
                 CConsole.Write(node.Name, _activeColor);
                 Console.WriteLine("' :");
@@ -216,7 +211,6 @@ namespace DebugXPath.Modes
 
         private void DisplayDefaultNamespace(string uri, string prefix)
         {
-            //Console.WriteLine($"Default namespace uri '{doc.DocumentElement.NamespaceURI}' has prefix '{nsPrefix}'.");
             Console.Write("Default namespace uri '");
             CConsole.Write(uri, _activeColor);
             Console.Write("' has prefix '");
@@ -227,12 +221,11 @@ namespace DebugXPath.Modes
 
         private void DisplayDefaultNamespaceError(string uri)
         {
-            //CConsole.WriteLine($"Can't find a prefix for default namespace uri '{doc.DocumentElement.NamespaceURI}' in namespace manager.", ConsoleColor.Red);
-            //CConsole.WriteLine($"Add that namespace uri with a prefix in the '{NAMESPACES_FILE_NAME}' file.", ConsoleColor.Red);
             CConsole.Write("Can't find a prefix for default namespace uri '", ConsoleColor.Red);
-            CConsole.Write(uri, _activeColor);
+            CConsole.Write(string.IsNullOrWhiteSpace(uri) ? "(empty)" : uri, _activeColor);
             CConsole.WriteLine("' in namespace manager.", ConsoleColor.Red);
             CConsole.WriteLine($"Add that namespace uri with a prefix in the '{NamespaceHelper.NAMESPACES_FILE_NAME}' file.", ConsoleColor.Red);
+            CConsole.WriteLine("Maybe this file doesn't need the use of namespaces.", ConsoleColor.Yellow);
             Console.WriteLine();
         }
     }
