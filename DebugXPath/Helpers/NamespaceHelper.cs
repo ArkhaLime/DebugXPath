@@ -100,7 +100,6 @@ namespace DebugXPath.Helpers
             CConsole.Write("' with prefix '");
             CConsole.Write(prefix, ConsoleColor.Cyan);
             CConsole.WriteLine("'.");
-            CConsole.WriteLine();
             _namespaces.Add(prefix, uri);
             return true;
         }

@@ -184,7 +184,7 @@ namespace DebugXPath.Modes
             if (nodeList.Count == 0)
             {
                 CConsole.Write("No child nodes for node '", ConsoleColor.Yellow);
-                CConsole.Write(workNode.Name, _activeColor);
+                CConsole.Write(FormatNodeName(workNode), _activeColor);
                 CConsole.WriteLine("'!", ConsoleColor.Yellow);
                 Console.WriteLine();
                 return;
@@ -199,7 +199,7 @@ namespace DebugXPath.Modes
             foreach (XmlNode node in nodeList)
             {
                 Console.Write("Node '");
-                CConsole.Write(node.Name, _activeColor);
+                CConsole.Write(FormatNodeName(node), _activeColor);
                 Console.WriteLine("' :");
                 Console.WriteLine(node.OuterXml);
                 Console.WriteLine();
@@ -207,6 +207,13 @@ namespace DebugXPath.Modes
             }
             CConsole.WriteLine($"Found {nodeList.Count} nodes.", _activeColor);
             Console.WriteLine();
+        }
+
+        private string FormatNodeName(XmlNode node)
+        {
+            string prefix = _nsManager.LookupPrefix(node.NamespaceURI);
+            if (!string.IsNullOrWhiteSpace(prefix)) prefix += ":";
+            return prefix + node.Name;
         }
 
         private void DisplayDefaultNamespace(string uri, string prefix)
