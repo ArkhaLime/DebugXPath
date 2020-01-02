@@ -26,8 +26,7 @@ namespace DebugXPath
                 string xpath = string.Empty;
 
                 Console.OutputEncoding = utf8;
-                //removed input encoding utf8 because character like "é" are treated like "\0" when entered in cmd.
-                //with ot without utf8, it doesn't works in windows terminal!
+                //removed input encoding utf8 because character like "é" are treated like "\0" when entered in cmd and in windows terminal.
                 //Console.InputEncoding = utf8;
 
                 NamespaceHelper.Instance.LoadNamespaces();
