@@ -2,9 +2,7 @@
 using DebugXPath.Helpers;
 using DebugXPath.Modes;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using System.Text;
 using System.Xml;
 using CConsole = DebugXPath.Helpers.ColoredConsole;
@@ -53,6 +51,8 @@ namespace DebugXPath
                     {
                         path = Console.ReadLine();
                     }
+
+                    path = path.Trim(CommandHelper.TRIMMABLE.ToCharArray());
 
                     if (string.IsNullOrWhiteSpace(path)) continue;
 
