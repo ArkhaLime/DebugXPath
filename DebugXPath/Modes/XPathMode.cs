@@ -1,6 +1,7 @@
 ﻿using DebugXPath.Enums;
 using DebugXPath.Helpers;
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Xml;
 using System.Xml.XPath;
@@ -12,6 +13,7 @@ namespace DebugXPath.Modes
     {
         private const ConsoleColor XPATH_MODE_COLOR = ConsoleColor.Cyan;
         private const ConsoleColor SELECTION_MODE_COLOR = ConsoleColor.Magenta;
+        private const string XML_NAMESPACE = "xmlns:";
 
         private ConsoleColor? _activeColor;
 
@@ -41,7 +43,15 @@ namespace DebugXPath.Modes
 
         public EExitMode Start()
         {
+            Console.WriteLine("DocumentElement:");
+            Console.WriteLine(_document.DocumentElement.OuterXml);
+            Console.WriteLine();
+
+            AddDocumentNamespaces();
+            Console.WriteLine();
+
             string nsPrefix = _nsManager.LookupPrefix(_document.DocumentElement.NamespaceURI);
+
             if (string.IsNullOrWhiteSpace(nsPrefix))
             {
                 DisplayDefaultNamespaceError(_document.DocumentElement.NamespaceURI);
@@ -51,10 +61,6 @@ namespace DebugXPath.Modes
             {
                 DisplayDefaultNamespace(_document.DocumentElement.NamespaceURI, nsPrefix);
             }
-
-            Console.WriteLine("DocumentElement:");
-            Console.WriteLine(_document.DocumentElement.OuterXml);
-            Console.WriteLine();
 
             DisplayHelp();
 
@@ -234,6 +240,26 @@ namespace DebugXPath.Modes
             CConsole.WriteLine($"Add that namespace uri with a prefix in the '{NamespaceHelper.NAMESPACES_FILE_NAME}' file.", ConsoleColor.Red);
             CConsole.WriteLine("Maybe this file doesn't need the use of namespaces.", ConsoleColor.Yellow);
             Console.WriteLine();
+        }
+
+        private void AddDocumentNamespaces()
+        {
+            var attributes = _document.DocumentElement.Attributes;
+
+            foreach (XmlAttribute attr in attributes)
+            {
+                if (!attr.Name.StartsWith(XML_NAMESPACE)) continue;
+
+                string prefix = attr.Name.Replace(XML_NAMESPACE, "");
+                if (string.IsNullOrWhiteSpace(prefix)) continue;
+
+                _nsManager.AddNamespace(prefix, attr.Value);
+                CConsole.Write("Adding namespace '");
+                CConsole.Write(attr.Value, _activeColor);
+                CConsole.Write("' with prefix '");
+                CConsole.Write(prefix, _activeColor);
+                CConsole.WriteLine("' from document.");
+            }
         }
     }
 }
