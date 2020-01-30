@@ -119,6 +119,13 @@ namespace DebugXPath.Modes
                     continue;
                 }
 
+                if (CommandHelper.IsShowCommand(command))
+                {
+                    DisplayNode(_workNode);
+                    CConsole.WriteLine();
+                    continue;
+                }
+
                 if (CommandHelper.IsSelectCommand(command))
                 {
                     command = command.Replace(CommandHelper.SELECT_COMMAND, "").TrimStart();
