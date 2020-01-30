@@ -116,6 +116,19 @@ namespace DebugXPath.Modes
                         CConsole.WriteLine($"Usage: {CommandHelper.SELECT_COMMAND} <xpath>", ConsoleColor.Yellow);
                         continue;
                     }
+                    if(command == "..")
+                    {
+                        if(_workNode != _document.DocumentElement)
+                        {
+                            _selectedNode = _selectedNode.ParentNode;
+                            DisplayNode(_selectedNode);
+                        }
+                        else
+                        {
+                            CConsole.WriteLine("Can not select parent of the document node", ConsoleColor.Yellow);
+                        }
+                        continue;
+                    }
                     _selectionStatus = ESelectionModeStatus.Entering;
                 }
 
@@ -204,22 +217,27 @@ namespace DebugXPath.Modes
             Console.WriteLine(separator);
             foreach (XmlNode node in nodeList)
             {
-                Console.Write("Node '");
-                CConsole.Write(FormatNodeName(node), _activeColor);
-                Console.WriteLine("' :");
-                Console.WriteLine(node.OuterXml);
-                Console.WriteLine();
-                Console.WriteLine(separator);
+                DisplayNode(node);
             }
             CConsole.WriteLine($"Found {nodeList.Count} nodes.", _activeColor);
             Console.WriteLine();
+        }
+
+        private void DisplayNode(XmlNode node)
+        {
+            Console.Write("Node '");
+            CConsole.Write(FormatNodeName(node), _activeColor);
+            Console.WriteLine("' :");
+            Console.WriteLine(node.OuterXml);
+            Console.WriteLine();
+            Console.WriteLine(separator);
         }
 
         private string FormatNodeName(XmlNode node)
         {
             string prefix = _nsManager.LookupPrefix(node.NamespaceURI);
             if (!string.IsNullOrWhiteSpace(prefix)) prefix += ":";
-            return prefix + node.Name;
+            return prefix + node.LocalName;
         }
 
         private void DisplayDefaultNamespace(string uri, string prefix)
