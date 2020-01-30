@@ -1,5 +1,6 @@
 ﻿using DebugXPath.Enums;
 using DebugXPath.Helpers;
+using DebugXPath.Properties;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -68,18 +69,28 @@ namespace DebugXPath.Modes
 
             while (true)
             {
-                string prompt = "XPath > ";
+                string prompt = "XPath";
                 _activeColor = XPATH_MODE_COLOR;
                 _workNode = _document.DocumentElement;
 
                 if (_selectionStatus == ESelectionModeStatus.In)
                 {
-                    prompt = "XPath (selection) > ";
+                    prompt = "XPath (selection)";
                     _activeColor = SELECTION_MODE_COLOR;
                     _workNode = _selectedNode;
                 }
 
-                CConsole.Write(prompt, _activeColor);
+                if (Settings.Default.DisplayCurrentNode)
+                {
+                    CConsole.Write($"{prompt} [", _activeColor);
+                    CConsole.Write(FormatNodeName(_workNode));
+                    CConsole.Write("] > ", _activeColor);
+                }
+                else
+                {
+                    CConsole.Write($"{prompt} > ", _activeColor);
+                }
+                
                 command = Console.ReadLine();
 
                 //Gestion de l'entrée utilisateur et des commandes
