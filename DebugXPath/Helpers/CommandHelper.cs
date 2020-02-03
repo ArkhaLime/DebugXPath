@@ -9,6 +9,8 @@ namespace DebugXPath.Helpers
         public const string HELP_KEYWORD = "help";
         public const string SELECT_COMMAND = "/select";
         public const string NODES_COMMAND = "/nodes";
+        public const string ATTRIBUTES_COMMAND = "/attributes";
+        public const string ATTRIBUTES_COMMAND_SHORT = "/attr";
         public const string SHOW_COMMAND = "/show";
         public const string NAMESPACES_COMMAND = "/namespaces";
         public const string NAMESPACES_COMMAND_SHORT = "/ns";
@@ -42,6 +44,12 @@ namespace DebugXPath.Helpers
             //return (command.Equals(NODES_COMMAND, StringComparison.InvariantCultureIgnoreCase));
             return Equals(command, NODES_COMMAND);
         }
+
+        public static bool IsAttributesCommand(string command)
+        {
+            return Equals(command, ATTRIBUTES_COMMAND) || Equals(command, ATTRIBUTES_COMMAND_SHORT);
+        }
+
         public static bool IsShowCommand(string command)
         {
             //return (command.Equals(NODES_COMMAND, StringComparison.InvariantCultureIgnoreCase));

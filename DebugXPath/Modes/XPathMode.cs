@@ -156,6 +156,12 @@ namespace DebugXPath.Modes
                     continue;
                 }
 
+                if (CommandHelper.IsAttributesCommand(command))
+                {
+                    DisplayAttributesList(_workNode);
+                    continue;
+                }
+
                 try
                 {
                     nodeList = _workNode.SelectNodes(command, _nsManager);
@@ -196,6 +202,7 @@ namespace DebugXPath.Modes
             CConsole.WriteLine($" * {CommandHelper.HELP_KEYWORD} : display this message", _activeColor);
             CConsole.WriteLine($" * {CommandHelper.EXIT_KEYWORD} : exit the current mode", _activeColor);
             CConsole.WriteLine($" * {CommandHelper.NODES_COMMAND} : list child nodes.", _activeColor);
+            CConsole.WriteLine($" * {CommandHelper.ATTRIBUTES_COMMAND} or {CommandHelper.ATTRIBUTES_COMMAND_SHORT} : list current node's attributes", _activeColor);
             CConsole.WriteLine($" * {CommandHelper.SELECT_COMMAND} <xpath> : select a specific node to work with.", _activeColor);
             Console.WriteLine();
         }
@@ -230,6 +237,28 @@ namespace DebugXPath.Modes
             DisplayNodes(nodeList);
         }
 
+        private void DisplayAttributesList(XmlNode workNode)
+        {
+            var nodeList = workNode.Attributes;
+
+            if (nodeList.Count == 0)
+            {
+                CConsole.Write("No attributes for node '", ConsoleColor.Yellow);
+                CConsole.Write(FormatNodeName(workNode), _activeColor);
+                CConsole.WriteLine("'!", ConsoleColor.Yellow);
+                Console.WriteLine();
+                return;
+            }
+
+            Console.WriteLine(separator);
+            foreach (XmlAttribute attribute in nodeList)
+            {
+                DisplayAttribute(attribute);
+            }
+            CConsole.WriteLine($"Found {nodeList.Count} attributes.", _activeColor);
+            Console.WriteLine();
+        }
+
         private void DisplayNodes(XmlNodeList nodeList)
         {
             Console.WriteLine(separator);
@@ -249,6 +278,18 @@ namespace DebugXPath.Modes
             Console.WriteLine(node.OuterXml);
             Console.WriteLine();
             Console.WriteLine(separator);
+        }
+
+        private void DisplayAttribute(XmlAttribute attribute)
+        {
+            Console.Write("Attribute '");
+            CConsole.Write(FormatNodeName(attribute), _activeColor);
+            CConsole.WriteLine("' :");
+            CConsole.Write("Value : '");
+            CConsole.Write(attribute.InnerText, _activeColor);
+            CConsole.WriteLine("'");
+            CConsole.WriteLine();
+            CConsole.WriteLine(separator);
         }
 
         private string FormatNodeName(XmlNode node)
